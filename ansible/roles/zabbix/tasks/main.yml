@@ -1,0 +1,18 @@
+---
+- name: Installer le dépôt Zabbix
+  apt:
+    deb: https://repo.zabbix.com/zabbix/6.0/ubuntu/pool/main/z/zabbix-release/zabbix-release_6.0-4+ubuntu22.04_all.deb
+    state: present
+
+- name: Update cache et installer Zabbix Server, Agent et Nginx
+  apt:
+    name: [zabbix-server-mysql, zabbix-frontend-php, zabbix-nginx-conf, zabbix-sql-scripts, zabbix-agent, mysql-server]
+    state: present
+    update_cache: yes
+
+- name: Démarrer les services
+  service:
+    name: "{{ item }}"
+    state: started
+    enabled: yes
+  loop: [zabbix-server, zabbix-agent, nginx, mysql]

@@ -1,0 +1,23 @@
+---
+- name: Installation du role AD DS
+  ansible.windows.win_feature:
+    name: AD-Domain-Services
+    include_management_tools: yes
+    state: present
+
+- name: Promotion en Controleur de Domaine (lab.local)
+  ansible.windows.win_domain:
+    dns_domain_name: lab.local
+    safe_mode_password: Password123!
+  register: ad_promo
+
+- name: Redemarrage suite a la promotion
+  ansible.windows.win_reboot:
+  when: ad_promo.reboot_required
+
+# Correction ici : Utilisation de community.windows
+- name: Appliquer la politique de mot de passe (12 car.)
+  community.windows.win_security_policy:
+    section: System Access
+    key: MinimumPasswordLength
+    value: 12

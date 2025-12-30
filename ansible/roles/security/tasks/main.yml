@@ -1,0 +1,26 @@
+---
+- name: Securisation SSH
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^PermitRootLogin'
+    line: 'PermitRootLogin no'
+  notify: Restart SSH
+
+- name: Configurer Firewalld par defaut
+  firewalld:
+    service: "{{ item }}"
+    permanent: yes
+    immediate: yes
+    state: enabled
+  loop: [ssh, http, https, high-availability]
+
+- name: Installation mises a jour automatiques
+  dnf:
+    name: dnf-automatic
+    state: present
+
+- name: Activer le timer des mises a jour
+  service:
+    name: dnf-automatic.timer
+    state: started
+    enabled: yes

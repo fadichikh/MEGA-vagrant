@@ -1,0 +1,33 @@
+---
+# Bloc pour configurer le fichier hosts partout
+- hosts: all
+  gather_facts: yes  # On force la récupération des infos ici
+  tasks:
+    - name: Configuration de base /etc/hosts (Linux uniquement)
+      become: yes
+      lineinfile:
+        path: /etc/hosts
+        line: "{{ item }}"
+      loop:
+        - "192.168.50.10 admin"
+        - "192.168.50.20 node01"
+        - "192.168.50.21 node02"
+        - "192.168.50.30 winsrv"
+      when: ansible_os_family != "Windows"
+
+# Bloc Cluster Linux
+- hosts: ha_cluster
+  become: yes
+  roles:
+    - ha_cluster
+
+# Bloc Supervision Admin
+- hosts: admin
+  become: yes
+  roles:
+    - zabbix
+
+# Bloc Windows (PAS DE BECOME ICI)
+- hosts: windows
+  roles:
+    - windows

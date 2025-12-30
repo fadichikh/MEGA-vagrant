@@ -1,0 +1,67 @@
+---
+
+- name: S'assurer que firewalld est démarré
+  service:
+    name: firewalld
+    state: started
+    enabled: yes
+
+- name: Ouvrir les ports HA dans le firewall
+  firewalld:
+    service: "{{ item }}"
+    permanent: yes
+    state: enabled
+    immediate: yes
+  loop:
+    - high-availability
+    - http
+# Correction erreur "No package available"
+- name: Activer le depot HighAvailability sur RedHat/AlmaLinux
+  command: dnf config-manager --set-enabled highavailability
+  ignore_errors: yes
+
+- name: Installer les paquets HA et services
+  dnf:
+    name: [pacemaker, corosync, pcs, nginx, samba, policycoreutils-python-utils]
+    state: present
+
+- name: Demarrer le service PCSD
+  service:
+    name: pcsd
+    state: restarted
+    enabled: yes
+
+# Correction erreur "passlib" : on utilise une commande shell directe
+- name: Definir le mot de passe de l'utilisateur hacluster
+  shell: echo "hacluster:hacluster_password" | chpasswd
+
+- name: Ouvrir les ports HA dans le firewall
+  firewalld:
+    service: high-availability
+    permanent: yes
+    immediate: yes
+    state: enabled
+
+# Correction erreur "Unable to communicate" : on utilise les IPs
+- name: Authentification des noeuds
+  command: pcs host auth 192.168.50.20 192.168.50.21 -u hacluster -p hacluster_password
+  run_once: true
+
+- name: Creation du cluster
+  command: pcs cluster setup my_cluster 192.168.50.20 192.168.50.21 --force
+  run_once: true
+
+- name: Demarrage du cluster
+  command: pcs cluster start --all
+  run_once: true
+
+- name: Desactiver STONITH et Quorum (pour un lab a 2 noeuds)
+  command: "{{ item }}"
+  loop:
+    - "pcs property set stonith-enabled=false"
+    - "pcs property set no-quorum-policy=ignore"
+  run_once: true
+
+- name: Creer la ressource VIP (IP Flottante)
+  command: pcs resource create VirtualIP ocf:heartbeat:IPaddr2 ip=192.168.50.100 cidr_netmask=24 op monitor interval=30s
+  run_once: true
