@@ -68,9 +68,9 @@ Installation et mise en route
 
 Cloner le dépôt puis lancer l’infrastructure :
 
-git clone https://github.com/<fadichikh>/Mega_TP.git
-cd Mega_TP
-vagrant up
+git clone https://github.com/fadichikh/MEGA-vagrant.git
+cd MEGA-vagrant
+
 
 
 Cette commande instancie les quatre machines virtuelles et déclenche automatiquement les playbooks Ansible. Le script scripts/setup_admin.sh se charge d’installer Ansible et de générer une clé SSH pour l’utilisateur vagrant. La clé publique est copiée dans keys/id_rsa.pub afin d’être injectée dans les nœuds Linux pour l’authentification sans mot de passe.
@@ -129,9 +129,9 @@ Contribuer
 Les contributions sont les bienvenues ! Vous pouvez signaler des bugs, proposer des améliorations ou soumettre des pull requests. N’oubliez pas d’adapter la documentation en conséquence.
 
 Fork le projet et clonez votre copie :
+git clone https://github.com/fadichikh/MEGA-vagrant.git
+cd MEGA-vagrant
 
-git clone https://github.com/<fadichikh>/Mega_TP.git
-cd Mega_TP
 
 
 Créez une branche pour votre fonctionnalité :
